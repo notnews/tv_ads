@@ -1,0 +1,21 @@
+{
+ "KGO_20120103_013000_ABC_World_News_With_Diane_Sawyer": {
+  "source": "https://archive.org/details/KGO_20120103_013000_ABC_World_News_With_Diane_Sawyer",
+  "columns_kept": [
+   "0",
+   "780",
+   "840",
+   "900"
+  ],
+  "note": "div.tvcol elements copied verbatim from the details page fetched for notwork_news on 2026-10-30; metadata reduced to five keys."
+ },
+ "KNTV_20120306_013000_NBC_Nightly_News": {
+  "source": "https://archive.org/details/KNTV_20120306_013000_NBC_Nightly_News",
+  "columns_kept": [
+   "840",
+   "900",
+   "960"
+  ],
+  "note": "div.tvcol elements copied verbatim from the details page fetched for notwork_news on 2026-10-30; metadata reduced to five keys. The column starting at 900 s has an empty caption snippet on the source page."
+ }
+}

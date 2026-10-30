@@ -1,0 +1,60 @@
+[project]
+name = "tv-ads"
+version = "0.1.0"
+description = "Find commercials and promos in TV news closed captions by how often their text recurs across air dates"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Gaurav Sood", email = "contact@gsood.com" }]
+keywords = ["closed captions", "tv news", "advertising", "commercial detection", "internet archive", "text reuse"]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "numpy>=2.4.4",
+    "pandas>=3.0.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/notnews/tv_ads"
+Repository = "https://github.com/notnews/tv_ads"
+Issues = "https://github.com/notnews/tv_ads/issues"
+
+[project.scripts]
+tv-ads = "tv_ads.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "black>=26.9.0",
+    "flake8>=7.3.0",
+    "isort>=9.0.0",
+    "pytest>=9.1.1",
+]
+compare = [
+    "datasketch>=2.0.0",
+]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
