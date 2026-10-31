@@ -68,6 +68,7 @@ def test_shared_ngram_goes_to_most_aired_spot():
             "first_aired": ["2012-01-01"] * 2,
             "last_aired": ["2012-02-01"] * 2,
             "networks": ["ABC;CBS", "NBC"],
+            "source": ["auto", "auto"],
             "text": ["one two three four five six seven eight", "one two three four five six seven eight nine"],
         }
     )
@@ -78,4 +79,45 @@ def test_shared_ngram_goes_to_most_aired_spot():
 def test_packaged_catalogue_loads():
     catalogue = Catalogue.read()
     assert len(catalogue.spots) > 0 and len(catalogue.index.hashes) > 0
-    assert (catalogue.spots["airings"] >= 2).all() and (catalogue.spots["tokens"] >= 8).all()
+    auto = catalogue.spots[catalogue.spots["source"] != "human"]
+    assert (auto["airings"] >= 2).all() and (auto["tokens"] >= 8).all()
+    assert set(catalogue.spots["source"]) <= {"auto", "human", "both"}
+
+
+def gold_rows():
+    rows = []
+    for k, (label, text) in enumerate(
+        [("news", "reporter: the storm hit at dawn."), *[("commercial", t) for t in AD], ("news", "good evening.")]
+    ):
+        rows.append({"identifier": "KGO_20120110_013000_ABC_X", "minute": 5, "sentence": k, "text": text,
+                     "label": label, "window": "w001"})  # fmt: skip
+    return pd.DataFrame(rows)
+
+
+def test_human_spots_and_merge():
+    from tv_ads.catalogue import add_human, auto_only, human_spots, without_window
+
+    human = human_spots(gold_rows())
+    assert len(human) == 1 and human["text"].iloc[0] == " ".join(AD)
+    assert (human["first_aired"].iloc[0], human["networks"].iloc[0]) == ("2012-01-10", "ABC")
+    items = nights()
+    vocabulary = Vocabulary()
+    auto = build_catalogue(items, [build_index(items, 8, vocabulary)], vocabulary, PARAMS)
+    merged = add_human(auto, human, n=8)
+    assert sorted(merged["source"]) == ["auto", "both"] and len(merged) == len(auto)
+    assert merged.loc[merged["source"] == "both", "windows"].tolist() == ["w001"]
+    assert sorted(without_window(merged, "w001")["source"]) == ["auto", "auto"]
+    alone = add_human(auto.iloc[0:0], human, n=8)
+    assert alone["source"].tolist() == ["human"] and without_window(alone, "w001").empty
+    assert auto_only(alone).empty
+    assert len(add_human(alone, human, n=8)) == 1
+
+
+def test_human_spot_matches_under_any_min_dates():
+    from tv_ads.catalogue import human_spots
+
+    spots = human_spots(gold_rows()).assign(spot=0)
+    index = catalogue_index(spots, 8)
+    page = make_item("KGO_20130101_013000_ABC_World_News", date(2013, 1, 1), news("new", 3) + AD + news("x", 2))
+    rows = flag_item(page, [index], Vocabulary(), Params(min_dates=50, min_share=0.5, min_run_tokens=30))
+    assert [r.text for r in rows if r.label == "ad"] == AD

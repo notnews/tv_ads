@@ -9,8 +9,8 @@ marks for commercials. A paid spot for Nexium runs straight on from a reporter's
 > don't have the hops for hoops with your buddies? ... learn more at isitlowt.com.
 
 `tv_ads` labels each caption sentence as `ad`, `boilerplate` or `program` and writes the text with the ads
-taken out. It needs no hand labels. It ships with a catalogue of 8,070 spots from the 2010–2021 evening news
-of ABC, CBS and NBC, so a single page can be cleaned straight away. For other channels or years, you build an
+taken out. It needs no hand labels. It ships with a database of 9,599 ad spots from the 2010–2021 evening news
+of ABC, CBS and NBC, detected automatically and from hand labels, so a single page can be cleaned straight away. For other channels or years, you build an
 index from your own corpus. That works on any channel, including the broadcast networks, where the only
 earlier source of commercial times, the Stanford Cable TV News Analyzer, has no coverage. (Stanford's
 intervals cover CNN, Fox News and MSNBC and are found from the video.)
@@ -29,11 +29,11 @@ This matches the page against the packaged catalogue. It writes `flagged/sentenc
 |---|---|---|---|
 | 13 | program | -1 | and still ahead tonight, we have new details on an amazing rescue, ten brave strangers ... |
 | 13 | program | -1 | sometimes investing opportunities are hard to spot. *(missed: first line of the Fidelity spot)* |
-| 13 | ad | 3099 | fidelity's etf market tracker shows you the big picture on how different asset classes ... |
+| 13 | ad | 3746 | fidelity's etf market tracker shows you the big picture on how different asset classes ... |
 | 14 | ad | -1 | and explore your next investing idea. *(no match; filled in because it sits inside the break)* |
-| 14 | ad | 1654 | and we've established a 500 million dollar fund so independent scientists can study the gulf ... |
-| 15 | ad | 73 | for many, prescription nexium not only provides 24-hour heartburn relief, but can also ... |
-| 15 | ad | 11 | possible side effects include headache, diarrhea and abdominal pain. |
+| 14 | ad | 1721 | and we've established a 500 million dollar fund so independent scientists can study the gulf ... |
+| 15 | ad | 66 | for many, prescription nexium not only provides 24-hour heartburn relief, but can also ... |
+| 15 | ad | 12 | possible side effects include headache, diarrhea and abdominal pain. |
 | 16 | program | -1 | reporter: it was a new year's eve near-tragedy. |
 
 `spot` is the catalogue row a sentence matched. This page aired in the corpus the catalogue was built from;
@@ -52,8 +52,14 @@ pages. The catalogue is then used alongside it, with each n-gram taking the high
 uv run tv-ads index my_pages/ --out my_index.npz
 uv run tv-ads flag my_pages/ --index my_index.npz --out flagged            # your index + the catalogue
 uv run tv-ads flag my_pages/ --index my_index.npz --no-catalogue --out x   # your index only
-uv run tv-ads catalogue my_pages/ --out my_spots.csv.gz                    # a catalogue of your own
+uv run tv-ads catalogue build my_pages/ --out my_spots.csv.gz              # a catalogue of your own
+uv run tv-ads catalogue add --gold gold.csv --catalogue my_spots.csv.gz --pages my_pages/ --out my_spots.csv.gz
 ```
+
+`catalogue add` folds hand-labelled commercials into a catalogue. The gold file has the columns `identifier`,
+`minute`, `sentence`, `text`, `label` and `window`. Consecutive `commercial` sentences of one item, with no
+other label between them, form one spot. `--pages` supplies local air dates; without it, the identifier's UTC
+date is used.
 
 ## How it works
 
@@ -81,35 +87,40 @@ captions that also appears on *other air dates* is very likely an ad or a networ
    hand-offs and sound bites replayed on another night. It is kept in the ad-free text, because it is part of
    the programme.
 
-**The catalogue.** `tv-ads catalogue` runs steps 1–4 over a corpus and groups the `ad` sentences into spots.
+**The catalogue.** `tv-ads catalogue build` runs steps 1–4 over a corpus and groups the `ad` sentences into
+spots.
 - A *line* is the token string of one `ad` sentence. A line is kept when it aired on two or more dates and at
   least half its occurrences were inside ad runs. The second rule drops a reporter's sign-off that sometimes
   sits next to a break but mostly ends a story.
 - Two lines join the same spot when one follows the other, within a break, on more than half the dates the
   more-aired line was seen on. A spot's lines air together and in order. The spot after a break boundary
   changes from night to night, so breaks fall apart into spots.
-- A generic line that many spots share ("if you can't afford your medication, astrazeneca may be able to
-  help.") follows no single spot, so it becomes a spot of its own.
+- A generic line that many spots share follows no single spot, so it becomes a spot of its own.
 - Each spot records its text, its airings (distinct dates on which at least half its lines aired together),
-  its first and last air date, and its networks.
-- At load time, the spots' text is hashed into an *n*-gram index whose counts are the spot's airings. That
-  index is then used like any other.
+  its first and last air date, its networks, its `source` and the gold `windows` it came from.
 
-The packaged file `src/tv_ads/data/spots.csv.gz` was built from the 3,739 pages present on 2026-10-30
-(mostly ABC; it will be rebuilt when the fetch completes) and is 662 KB. It holds 8,070 spots, 26,786 lines and 259,285
-words, with a median of 24 words and 2 lines per spot. 15% of spots aired on two or more networks. Spots are
-often fragments of a commercial, not the whole thing: the BP spot above matched three catalogue rows. That
-does not hurt matching, but a row is not a one-to-one count of commercials. Some catalogue rows, from the most
-aired down:
+`source` is `auto` (detected), `human` (from hand labels) or `both`:
+- An auto spot with at least half its *n*-grams inside a hand-labelled break becomes `both`.
+- A hand-labelled break is added as a `human` spot unless auto spots already cover 90% of it.
+- Human and `both` spots count as 1,000 airings, so they match under any `min_dates`.
+
+At load time, the spots' text is hashed into an *n*-gram index whose counts are the airings. That index is
+then used like any other.
+
+The packaged file `src/tv_ads/data/spots.csv.gz` is 791 KB, built from the 4,818 pages present on 2026-10-30
+(mostly ABC; it will be rebuilt when the fetch completes) plus the hand labels so far. It holds 9,599 spots:
+9,563 `auto`, 34 `both` and 2 `human`, the last being two whole annotated breaks. The median spot is 24
+words. Spots are often fragments of a commercial, not the whole thing: the BP spot above matched three
+catalogue rows. That does not hurt matching, but a row is not a one-to-one count of commercials. Some
+catalogue rows, from the most aired down:
 
 | spot | airings | first – last | networks | text |
 |---|---|---|---|---|
-| 0 | 702 | 2010-01-02 – 2016-12-11 | ABC;CBS;NBC | side effects may include headache, upset stomach, delayed backache, or muscle ache. |
-| 2 | 504 | 2014-07-06 – 2020-08-25 | ABC;CBS | humira can lower your ability to fight infections, including tuberculosis. serious, sometimes fatal ... |
-| 10 | 313 | 2012-02-17 – 2015-01-17 | ABC;CBS;NBC | cialis tadalafil for daily use helps you be ready anytime the moment's right. ... |
-| 200 | 56 | 2018-11-30 – 2020-12-21 | ABC;CBS | life is full of make-or-break moments. that's why it's so important to help reduce your risk of fracture with prolia®. ... |
-| 1000 | 19 | 2015-08-13 – 2015-10-28 | ABC | we value sticking with things. ... more people stick with humana medicare advantage. ... |
-| 3000 | 7 | 2020-04-27 – 2020-09-15 | ABC | not all types of depression should be treated the same. vraylar effectively helps relieve all symptoms ... |
+| 0 | 778 | 2010-01-02 – 2016-12-11 | ABC;CBS;NBC | side effects may include headache, upset stomach, delayed backache, or muscle ache. |
+| 2 | 564 | 2013-09-20 – 2021-12-30 | ABC;CBS;NBC | eliquis can cause serious and in rare cases fatal bleeding. ... |
+| 10 | 321 | 2010-03-19 – 2018-09-21 | ABC;CBS | common side effects are dizziness, sleepiness, weight gain ... |
+| 200 | 61 | 2010-12-14 – 2011-12-26 | ABC;CBS | her morning begins with arthritis pain. that's a coffee and ... |
+| 1000 | 22 | 2011-09-27 – 2011-12-15 | ABC;CBS | all-natural benefiber, the fiber supplement that's taste-free ... |
 
 **Commercials versus network promos.** Both are labelled `ad`, because no split could be made credibly.
 Promos barely exist as recurring caption copy in this corpus:
@@ -251,16 +262,27 @@ Most measured errors are misalignment in the reference, so the tables understate
 points the same way. The share of `reporter:` sentences that land in story rows, a check that does not use
 the detector, is 0.96–0.98 in other ABC years but 0.89 in 2013.
 
-**Gold labels and LLM codes.** Hand-labelled sentences can be scored with:
+**Gold labels.** These are hand-labelled caption windows:
 
 ```bash
-tv-ads score-gold --sentences flagged/sentences.csv.gz --gold gold.csv --out gold.json
+tv-ads score-gold PAGES --gold gold.csv --out gold.json
 ```
 
-`gold.csv` has the columns `identifier`, `minute`, `label` and either `sentence` (position, as written by
-`flag`) or `text`. A row with `text` is matched to the sentence in the same item and minute that has the same
-tokens. Labels are news, tease, commercial, promo, other or unclear. Commercial and promo are positives, and
-unclear is dropped. The moment-level LLM codes from notwork_news use
+Each window is flagged twice:
+- with the catalogue's auto spots only;
+- with the whole catalogue except the human spots taken from that window (leave-one-window-out), so a
+  window is never scored against its own labels.
+
+Rows are matched to sentences by their tokens within the same item and minute. Commercial and promo are
+positives; unclear is dropped.
+
+On the first 8 windows (325 rows, 74 commercial sentences), the catalogue alone, with no corpus index, gets
+precision 0.986 and recall 0.986 both ways: 73 of 74 commercials found, 1 news sentence flagged. The human
+spots change nothing yet, because the two annotated breaks are different ads from those in other windows.
+The result may be a little flattering: the gold items are in the corpus the auto spots were built
+from, although every auto spot also aired on at least one other date.
+
+**LLM codes.** The moment-level codes from notwork_news use
 `tv-ads score-codes --sentences ... --sample captions_sample.csv.gz --codes captions_codes.csv.gz --out codes.json`.
 Stanford's commercial intervals for cable (tvnews.stanford.edu/export/commercial) could not be used: the
 site's TLS certificate has expired, and verification was not bypassed.
@@ -297,7 +319,8 @@ site's TLS certificate has expired, and verification was not bypassed.
 make lint      # black (line length 120), isort (black profile), flake8
 make test      # pytest; fixtures in tests/fixtures with provenance.json
 make validate  # export Vanderbilt rows if needed, tune on validation days, score test days -> data/validate
-uv run tv-ads catalogue ../notwork_news/data/derived/captions/html --out src/tv_ads/data/spots.csv.gz
+uv run tv-ads catalogue build ../notwork_news/data/derived/captions/html --out data/spots_auto.csv.gz
+uv run tv-ads catalogue add --gold gold.csv --catalogue data/spots_auto.csv.gz --pages ../notwork_news/data/derived/captions/html --out src/tv_ads/data/spots.csv.gz
 ```
 
 ## License
