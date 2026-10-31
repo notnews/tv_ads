@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tv_ads.flag import Params, label_from_dates, runs, token_dates
+from tv_ads.flag import Params, edge_guard, label_from_dates, runs, token_dates
 from tv_ads.index import DEFAULT_N, NETWORKS, RepetitionIndex, Vocabulary, ngram_hashes
 from tv_ads.parse import Item, tokenize
 
@@ -47,7 +47,7 @@ def ad_runs(
         if item.aired is None or not item.sentences:
             continue
         best, owner = token_dates(item, indexes, vocabulary)
-        labels = np.asarray(label_from_dates(best, owner, len(item.sentences), params))
+        labels = np.asarray(label_from_dates(best, owner, len(item.sentences), params, edge_guard(item)))
         for sentence in item.sentences:
             seen[" ".join(tokenize(sentence.text))] += 1
         for start, end in runs(labels == "ad"):

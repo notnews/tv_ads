@@ -76,7 +76,8 @@ captions that also appears on *other air dates* is very likely an ad or a networ
    count of at least `min_dates`.
 4. **Label.** Consecutive repeating sentences form runs. Stretches of at most `max_gap_tokens` words between
    two repeating sentences are filled in, so a garbled caption line does not split an ad break. A run of at
-   least `min_run_tokens` words is `ad`; a shorter run is `boilerplate`. Boilerplate covers sign-offs,
+   least `min_run_tokens` words is `ad`; a shorter run is `boilerplate`. Reporter sign-offs and `reporter:`
+   lines at a run's edges are trimmed off first, because they are news airtime. Boilerplate covers sign-offs,
    hand-offs and sound bites replayed on another night. It is kept in the ad-free text, because it is part of
    the programme.
 
@@ -272,7 +273,10 @@ site's TLS certificate has expired, and verification was not bypassed.
   only when it is short and sits between two repeating ones.
 - **Show furniture and replayed news.** Sign-offs and hand-offs recur and are labelled `boilerplate`, which is
   kept. A news package rerun on a later date, such as a weekend replay or a year-end look back, can be long
-  enough to be labelled `ad`. A sign-off right before a break can be absorbed into the ad run.
+  enough to be labelled `ad`. Reporter sign-offs ("linsey davis, abc news, new york.") and `reporter:` lines
+  at either edge of an ad run are trimmed back to `program`. On 2,237 test newscasts, the trim moved 407
+  sentences out of `ad`, 280 of them in story rows. Macro F1 went from 0.7319 to 0.7325, with recall
+  unchanged.
 - **Teases are programme.** "Still ahead ..." is written for the night, so it is `program`. The ad-free text is
   free of ads, not of everything except stories.
 - **Missing ad captions.** Some stations, notably KNTV for NBC, leave commercial minutes uncaptioned. There is

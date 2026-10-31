@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -10,6 +11,10 @@ from tv_ads.index import RepetitionIndex, Vocabulary, item_tokens, ngram_hashes
 from tv_ads.parse import Item
 
 LABELS = ("ad", "boilerplate", "program")
+SIGNOFF_RE = re.compile(
+    r"^(reporter: )?[a-z][a-z .'-]{2,40}, (abc|cbs|nbc|cnn|fox|msnbc)( news)?(,| in| at)? [a-z .,'-]{2,40}[.!]?$"
+    r"|^reporter:"
+)
 
 
 @dataclass(frozen=True)
@@ -68,7 +73,15 @@ def runs(mask: np.ndarray) -> list[tuple[int, int]]:
     return list(zip(np.flatnonzero(edges == 1), np.flatnonzero(edges == -1), strict=True))
 
 
-def label_from_dates(best: np.ndarray, owner: np.ndarray, n_sentences: int, params: Params) -> list[str]:
+def edge_guard(item: Item) -> np.ndarray:
+    """Sentences that are news airtime even when they recur: reporter sign-offs ("linsey davis, abc news, new
+    york.") and lines spoken by a reporter. They are trimmed off the edges of an ``ad`` run."""
+    return np.array([bool(SIGNOFF_RE.search(s.text)) for s in item.sentences], dtype=bool)
+
+
+def label_from_dates(
+    best: np.ndarray, owner: np.ndarray, n_sentences: int, params: Params, guard: np.ndarray | None = None
+) -> list[str]:
     """Turn token repetition counts into sentence labels.
 
     1. A sentence repeats when at least ``min_share`` of its tokens sit in an n-gram seen on ``min_dates`` or
@@ -76,7 +89,8 @@ def label_from_dates(best: np.ndarray, owner: np.ndarray, n_sentences: int, para
     2. Unrepeated stretches of at most ``max_gap_tokens`` tokens between two repeating sentences are filled in,
        so a garbled line inside an ad break does not split it. Token-less lines ("♪") between two repeating
        sentences are always filled.
-    3. A run of repeating sentences with at least ``min_run_tokens`` tokens is ``ad``: commercials and promos
+    3. Guarded sentences (:func:`edge_guard`) at either end of a run are dropped from it.
+    4. A run of repeating sentences with at least ``min_run_tokens`` tokens is ``ad``: commercials and promos
        run 15-30 s, 40-80 words. Shorter isolated runs are ``boilerplate``: sign-ons, sign-offs, hand-offs
        ("good night", "jake?") that recur every night but belong to the programme.
     """
@@ -86,6 +100,14 @@ def label_from_dates(best: np.ndarray, owner: np.ndarray, n_sentences: int, para
     for start, end in runs(~repeat):
         if 0 < start and end < n_sentences and sizes[start:end].sum() <= params.max_gap_tokens:
             repeat[start:end] = True
+    if guard is not None:
+        for start, end in runs(repeat.copy()):
+            while start < end and guard[start]:
+                repeat[start] = False
+                start += 1
+            while end > start and guard[end - 1]:
+                repeat[end - 1] = False
+                end -= 1
     labels = ["program"] * n_sentences
     for start, end in runs(repeat):
         label = "ad" if sizes[start:end].sum() >= params.min_run_tokens else "boilerplate"
@@ -121,7 +143,7 @@ def flag_item(
     """Label every sentence of an item; an index with ``spot_ids`` (the catalogue) also names the spots."""
     best, owner = token_dates(item, indexes, vocabulary)
     n = len(item.sentences)
-    labels = label_from_dates(best, owner, n, params)
+    labels = label_from_dates(best, owner, n, params, edge_guard(item))
     sizes = np.bincount(owner, minlength=n)
     hits = np.bincount(owner, weights=best >= params.min_dates, minlength=n)
     share = np.divide(hits, sizes, out=np.zeros(n), where=sizes > 0)

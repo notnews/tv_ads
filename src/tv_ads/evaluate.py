@@ -17,7 +17,7 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from tv_ads.flag import Params, label_from_dates, token_dates
+from tv_ads.flag import Params, edge_guard, label_from_dates, token_dates
 from tv_ads.index import RepetitionIndex, Vocabulary
 from tv_ads.parse import Item
 from tv_ads.vanderbilt import Rundown
@@ -99,6 +99,7 @@ class Prepared:
     kinds: list[str]
     distance: np.ndarray
     rundown: Rundown
+    guard: np.ndarray | None = None
 
 
 def prepare(
@@ -116,7 +117,8 @@ def prepare(
             continue
         best, owner = token_dates(item, indexes, vocabulary)
         times = sentence_times(item, offsets.get(item.network, 0))
-        out.append(Prepared(item, best, owner, rundown.kind_at(times), boundary_distance(rundown, times), rundown))
+        kinds = rundown.kind_at(times)
+        out.append(Prepared(item, best, owner, kinds, boundary_distance(rundown, times), rundown, edge_guard(item)))
     return out
 
 
@@ -133,7 +135,7 @@ def sentence_table(prepared: list[Prepared], params: Params) -> pd.DataFrame:
                     "aired": p.item.aired,
                     "sentence": np.arange(n),
                     "tokens": np.bincount(p.owner, minlength=n),
-                    "label": label_from_dates(p.best, p.owner, n, params),
+                    "label": label_from_dates(p.best, p.owner, n, params, p.guard),
                     "kind": p.kinds,
                     "boundary_s": p.distance,
                 }
@@ -158,7 +160,7 @@ def time_recall(prepared: list[Prepared], params: Params, offsets: dict[str, int
         is_break = (kinds == "commercial") | (kinds == "break")
         minutes = np.floor((clock - shift) / 60).astype(int)
         captioned = np.isin(minutes, [s.minute for s in item.sentences])
-        labels = label_from_dates(p.best, p.owner, len(item.sentences), params)
+        labels = label_from_dates(p.best, p.owner, len(item.sentences), params, p.guard)
         covered = np.zeros(len(clock), dtype=bool)
         for sentence, label in zip(item.sentences, labels, strict=True):
             if label == "ad":
@@ -243,7 +245,10 @@ def tune(prepared: list[Prepared]) -> tuple[Params, pd.DataFrame]:
         params = Params(**setting)
         flagged = (
             np.concatenate(
-                [np.asarray(label_from_dates(p.best, p.owner, len(p.item.sentences), params)) for p in prepared]
+                [
+                    np.asarray(label_from_dates(p.best, p.owner, len(p.item.sentences), params, p.guard))
+                    for p in prepared
+                ]
             )
             == "ad"
         )

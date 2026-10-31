@@ -50,3 +50,21 @@ def test_unindexed_item_counts_every_date(corpus):
         corpus[0], [index], Vocabulary(), Params(min_dates=2, min_share=0.5, min_run_tokens=30, max_gap_tokens=0)
     )
     assert [r.text for r in rows if r.label == "ad"] == AD
+
+
+def test_signoff_at_break_edge_is_trimmed():
+    from datetime import date
+
+    from conftest import make_item
+
+    from tv_ads.flag import edge_guard
+
+    item = make_item(
+        "KGO_20120101_013000_ABC_X", date(2012, 1, 1), ["a.", "linsey davis, abc news, new york.", "b.", "c."]
+    )
+    assert edge_guard(item).tolist() == [False, True, False, False]
+    params = Params(min_dates=2, min_share=0.5, min_run_tokens=30, max_gap_tokens=0)
+    owner = np.repeat(np.arange(4), [10, 6, 20, 20])
+    best = np.repeat(np.array([0, 5, 5, 5]), [10, 6, 20, 20])
+    assert label_from_dates(best, owner, 4, params, edge_guard(item)) == ["program", "program", "ad", "ad"]
+    assert label_from_dates(best, owner, 4, params) == ["program", "ad", "ad", "ad"]
