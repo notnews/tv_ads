@@ -1,5 +1,7 @@
 # tv_ads: find commercials in TV news closed captions
 
+[![CI](https://github.com/notnews/tv_ads/actions/workflows/ci.yml/badge.svg)](https://github.com/notnews/tv_ads/actions/workflows/ci.yml)
+
 The Internet Archive's TV News Archive keeps closed captions for decades of newscasts. Caption text has no
 marks for commercials. A paid spot for Nexium runs straight on from a reporter's sign-off:
 
