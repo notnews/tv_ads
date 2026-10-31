@@ -1,164 +1,413 @@
 {
-  "items": 1569,
+  "items": 2934,
+  "pages_by_network": {
+    "ABC": 2782,
+    "CBS": 78,
+    "NBC": 74
+  },
   "offsets": {
-    "ABC": -5,
-    "CBS": -15,
-    "NBC": 5
+    "ABC": 0,
+    "CBS": -10,
+    "NBC": 0
   },
   "by_n": {
     "5": {
       "params": {
-        "min_dates": 1,
-        "min_share": 0.5,
-        "min_run_tokens": 80,
-        "max_gap_tokens": 10
+        "min_dates": 2,
+        "min_share": 0.7,
+        "min_run_tokens": 120,
+        "max_gap_tokens": 50
       },
-      "validation_f1": 0.8518440911214623
+      "validation_macro_f1": 0.7329443176307695,
+      "validation_f1_shared_setting": {
+        "ABC": 0.8667258056552083,
+        "CBS": 0.8584937521107734,
+        "NBC": 0.4736133951263268
+      },
+      "validation_f1_best_setting_per_network": {
+        "ABC": 0.8734642524038995,
+        "CBS": 0.8629594042757626,
+        "NBC": 0.5063320285516923
+      }
     },
     "8": {
       "params": {
         "min_dates": 1,
-        "min_share": 0.3,
-        "min_run_tokens": 80,
-        "max_gap_tokens": 25
+        "min_share": 0.7,
+        "min_run_tokens": 30,
+        "max_gap_tokens": 50
       },
-      "validation_f1": 0.8522800950940134
+      "validation_macro_f1": 0.7357224720664913,
+      "validation_f1_shared_setting": {
+        "ABC": 0.8601244405782819,
+        "CBS": 0.8637802947265864,
+        "NBC": 0.48326268089460606
+      },
+      "validation_f1_best_setting_per_network": {
+        "ABC": 0.8710807398367407,
+        "CBS": 0.8666544722882752,
+        "NBC": 0.48808334522620234
+      }
     },
     "12": {
       "params": {
         "min_dates": 1,
         "min_share": 0.3,
-        "min_run_tokens": 50,
+        "min_run_tokens": 30,
         "max_gap_tokens": 50
       },
-      "validation_f1": 0.8514110042004738
+      "validation_macro_f1": 0.7384930760986043,
+      "validation_f1_shared_setting": {
+        "ABC": 0.8633477078210076,
+        "CBS": 0.8651928647659705,
+        "NBC": 0.48693865570883477
+      },
+      "validation_f1_best_setting_per_network": {
+        "ABC": 0.8693255554943717,
+        "CBS": 0.8652720175652597,
+        "NBC": 0.48693865570883477
+      }
     }
   },
   "chosen": {
-    "n": 8,
+    "n": 12,
     "params": {
       "min_dates": 1,
       "min_share": 0.3,
-      "min_run_tokens": 80,
-      "max_gap_tokens": 25
+      "min_run_tokens": 30,
+      "max_gap_tokens": 50
     }
   },
   "test": {
-    "newscasts": 758,
-    "sentences": 309857,
-    "all": {
-      "precision": 0.8937587475275584,
-      "recall": 0.8078584357622213,
-      "f1": 0.8486404002226816,
-      "break_share": 0.25728791606085344,
-      "tokens": 2973964
+    "newscasts": 1408,
+    "sentences": 602828,
+    "macro_f1": 0.7413907471571292,
+    "pooled": {
+      "precision": 0.9041741154589275,
+      "recall": 0.8211174691349525,
+      "f1": 0.8606465921153054,
+      "break_share": 0.2720413388203938,
+      "tokens": 5606159,
+      "break_seconds": 707338,
+      "captioned_share": 0.9752593526715658,
+      "recall_all_time": 0.7768817736358007,
+      "recall_captioned_time": 0.7965899240111447
     },
     "interior_20s": {
-      "precision": 0.9232942045090128,
-      "recall": 0.865884257810246,
-      "f1": 0.8936681654165054,
-      "break_share": 0.2288034117936521,
-      "tokens": 2499565
+      "precision": 0.9268469286687382,
+      "recall": 0.8954836904325957,
+      "f1": 0.910895420897547,
+      "break_share": 0.24560259549902796,
+      "tokens": 4714315
     },
     "by_network": {
       "ABC": {
-        "precision": 0.8929808399252376,
-        "recall": 0.8134062210029451,
-        "f1": 0.8513381132139207,
-        "break_share": 0.2622616981040244,
-        "tokens": 2835374
+        "precision": 0.9041147958829382,
+        "recall": 0.8245005212763404,
+        "f1": 0.8624742741770438,
+        "break_share": 0.2749430884206448,
+        "tokens": 5456271,
+        "break_seconds": 686188,
+        "captioned_share": 0.984843803738917,
+        "recall_all_time": 0.7905136784671256,
+        "recall_captioned_time": 0.8026792426027097,
+        "newscasts": 1364
       },
       "CBS": {
-        "precision": 0.921602191030469,
-        "recall": 0.7588977376841215,
-        "f1": 0.8323735167935686,
-        "break_share": 0.22421857716254226,
-        "tokens": 63282
+        "precision": 0.8998513011152416,
+        "recall": 0.7328045531605716,
+        "f1": 0.8077821531068544,
+        "break_share": 0.23446572308740649,
+        "tokens": 70441,
+        "break_seconds": 9290,
+        "captioned_share": 0.9095801937567277,
+        "recall_all_time": 0.6073196986006458,
+        "recall_captioned_time": 0.6676923076923077,
+        "newscasts": 19
       },
       "NBC": {
-        "precision": 0.9714726291441789,
-        "recall": 0.34211240836274776,
-        "f1": 0.5060240963855421,
-        "break_share": 0.09781165347639029,
-        "tokens": 75308
+        "precision": 0.943983995427265,
+        "recall": 0.3919544321822713,
+        "f1": 0.5539158141874895,
+        "break_share": 0.10607071380920614,
+        "tokens": 79447,
+        "break_seconds": 11860,
+        "captioned_share": 0.47217537942664417,
+        "recall_all_time": 0.12099494097807757,
+        "recall_captioned_time": 0.25625,
+        "newscasts": 25
       }
     },
-    "by_year": {
-      "2010": {
-        "precision": 0.9516214298632462,
-        "recall": 0.8553270770942875,
-        "f1": 0.9009084353772856,
-        "break_share": 0.25622102541593644,
-        "tokens": 624254
+    "by_network_year": {
+      "ABC_2010": {
+        "precision": 0.9625070759995261,
+        "recall": 0.8777334253729103,
+        "f1": 0.9181676331247626,
+        "break_share": 0.2610372232076264,
+        "tokens": 638204,
+        "break_seconds": 77449,
+        "captioned_share": 0.9854097535152164,
+        "recall_all_time": 0.8343038644785601,
+        "recall_captioned_time": 0.8466567958175553,
+        "newscasts": 160
       },
-      "2011": {
-        "precision": 0.9174337517433752,
-        "recall": 0.8489150273778139,
-        "f1": 0.8818454290392699,
-        "break_share": 0.24966322475719963,
-        "tokens": 651770
+      "ABC_2011": {
+        "precision": 0.9142090965103904,
+        "recall": 0.8423337698614937,
+        "f1": 0.8768009132573404,
+        "break_share": 0.24447910719411525,
+        "tokens": 634046,
+        "break_seconds": 73540,
+        "captioned_share": 0.9810987217840631,
+        "recall_all_time": 0.7979602937177046,
+        "recall_captioned_time": 0.8133333333333334,
+        "newscasts": 158
       },
-      "2012": {
-        "precision": 0.8897222103273403,
-        "recall": 0.8033206113194624,
-        "f1": 0.844316730523627,
-        "break_share": 0.24263976670258333,
-        "tokens": 746172
+      "ABC_2012": {
+        "precision": 0.8671563512738479,
+        "recall": 0.7927054974070027,
+        "f1": 0.8282612282612282,
+        "break_share": 0.2590200787968429,
+        "tokens": 611192,
+        "break_seconds": 73160,
+        "captioned_share": 0.9852378348824494,
+        "recall_all_time": 0.7621241115363586,
+        "recall_captioned_time": 0.7735432852386237,
+        "newscasts": 154
       },
-      "2013": {
-        "precision": 0.8001882119213953,
-        "recall": 0.725645675544335,
-        "f1": 0.7610961066892097,
-        "break_share": 0.27647373026041994,
-        "tokens": 610322
+      "ABC_2013": {
+        "precision": 0.7826643976991116,
+        "recall": 0.7069136812576705,
+        "f1": 0.7428629333136809,
+        "break_share": 0.2745508924388193,
+        "tokens": 623236,
+        "break_seconds": 76330,
+        "captioned_share": 0.9930564653478318,
+        "recall_all_time": 0.6913402331979562,
+        "recall_captioned_time": 0.696174142480211,
+        "newscasts": 158
       },
-      "2014": {
-        "precision": 0.9582748833719374,
-        "recall": 0.8990848152796058,
-        "f1": 0.9277367190954456,
-        "break_share": 0.27395571729842816,
-        "tokens": 238513
+      "ABC_2014": {
+        "precision": 0.9465305548812429,
+        "recall": 0.9015942558111233,
+        "f1": 0.9235161026932355,
+        "break_share": 0.26757584490565484,
+        "tokens": 614181,
+        "break_seconds": 75241,
+        "captioned_share": 0.984449967437966,
+        "recall_all_time": 0.8526335375659547,
+        "recall_captioned_time": 0.8661014432098932,
+        "newscasts": 156
       },
-      "2019": {
-        "precision": 0.8496256026259104,
-        "recall": 0.6053939482531794,
-        "f1": 0.7070120780163032,
-        "break_share": 0.26584282980191,
-        "tokens": 102933
+      "ABC_2015": {
+        "precision": 0.9315023373069663,
+        "recall": 0.8967346565444069,
+        "f1": 0.9137879075027419,
+        "break_share": 0.2650938363803889,
+        "tokens": 618630,
+        "break_seconds": 76680,
+        "captioned_share": 0.9760041731872717,
+        "recall_all_time": 0.8464658320292123,
+        "recall_captioned_time": 0.8672768572955639,
+        "newscasts": 156
+      },
+      "ABC_2016": {
+        "precision": 0.9107196592671466,
+        "recall": 0.8401721174071345,
+        "f1": 0.8740246252617198,
+        "break_share": 0.2911957566015502,
+        "tokens": 643258,
+        "break_seconds": 84262,
+        "captioned_share": 0.9849279627827491,
+        "recall_all_time": 0.8153022714865539,
+        "recall_captioned_time": 0.8277785810680548,
+        "newscasts": 157
+      },
+      "ABC_2017": {
+        "precision": 0.9163966528082421,
+        "recall": 0.792901154478246,
+        "f1": 0.8501876745810056,
+        "break_share": 0.3156639432335241,
+        "tokens": 622621,
+        "break_seconds": 88127,
+        "captioned_share": 0.9884257945918958,
+        "recall_all_time": 0.7604593370930589,
+        "recall_captioned_time": 0.7693641153983032,
+        "newscasts": 155
+      },
+      "ABC_2018": {
+        "precision": 0.9012630653316546,
+        "recall": 0.7939175212358611,
+        "f1": 0.8441915209262493,
+        "break_share": 0.30936832817742144,
+        "tokens": 367216,
+        "break_seconds": 50199,
+        "captioned_share": 0.9898404350684277,
+        "recall_all_time": 0.7698758939421104,
+        "recall_captioned_time": 0.7777777777777778,
+        "newscasts": 89
+      },
+      "ABC_2019": {
+        "precision": 0.8980007183048007,
+        "recall": 0.6426490747087046,
+        "f1": 0.74916354556804,
+        "break_share": 0.2789441609807975,
+        "tokens": 83687,
+        "break_seconds": 11200,
+        "captioned_share": 0.9589285714285715,
+        "recall_all_time": 0.6422321428571428,
+        "recall_captioned_time": 0.6697392923649906,
+        "newscasts": 21
+      },
+      "CBS_2012": {
+        "precision": 0.8916192446973616,
+        "recall": 0.7381156316916488,
+        "f1": 0.8076382380506093,
+        "break_share": 0.2246164205665913,
+        "tokens": 62373,
+        "break_seconds": 8130,
+        "captioned_share": 0.8966789667896679,
+        "recall_all_time": 0.5944649446494465,
+        "recall_captioned_time": 0.662962962962963,
+        "newscasts": 17
+      },
+      "CBS_2019": {
+        "precision": 0.9514038876889849,
+        "recall": 0.7031125299281724,
+        "f1": 0.8086278109224415,
+        "break_share": 0.3106098165592464,
+        "tokens": 8068,
+        "break_seconds": 1160,
+        "captioned_share": 1.0,
+        "recall_all_time": 0.6974137931034483,
+        "recall_captioned_time": 0.6974137931034483,
+        "newscasts": 2
+      },
+      "NBC_2012": {
+        "precision": 0.9067164179104478,
+        "recall": 0.32369172216936254,
+        "f1": 0.47707193941943626,
+        "break_share": 0.08833120419552208,
+        "tokens": 59492,
+        "break_seconds": 8800,
+        "captioned_share": 0.41704545454545455,
+        "recall_all_time": 0.07715909090909091,
+        "recall_captioned_time": 0.18501362397820165,
+        "newscasts": 19
+      },
+      "NBC_2019": {
+        "precision": 0.9870609981515711,
+        "recall": 0.5050441361916772,
+        "f1": 0.6681960375391033,
+        "break_share": 0.15895765472312703,
+        "tokens": 19955,
+        "break_seconds": 3060,
+        "captioned_share": 0.630718954248366,
+        "recall_all_time": 0.24705882352941178,
+        "recall_captioned_time": 0.3917098445595855,
+        "newscasts": 6
       }
     },
     "label_by_kind": {
       "break": {
-        "ad": 16566,
-        "boilerplate": 523,
-        "program": 9971
+        "ad": 332174,
+        "boilerplate": 2797,
+        "program": 89961
       },
       "commercial": {
-        "ad": 601579,
-        "boilerplate": 5291,
-        "program": 131235
+        "ad": 920118,
+        "boilerplate": 595,
+        "program": 179462
       },
       "furniture": {
-        "ad": 26083,
-        "boilerplate": 9359,
-        "program": 138029
+        "ad": 41659,
+        "boilerplate": 7026,
+        "program": 282859
       },
       "gap": {
-        "ad": 25,
+        "ad": 157,
         "boilerplate": 0,
-        "program": 32
+        "program": 148
       },
       "outside": {
-        "ad": 3097,
-        "boilerplate": 14837,
-        "program": 160524
+        "ad": 9953,
+        "boilerplate": 10004,
+        "program": 348787
       },
       "story": {
-        "ad": 73479,
-        "boilerplate": 61118,
-        "program": 2074202
+        "ad": 132720,
+        "boilerplate": 34071,
+        "program": 3914261
       }
     }
   },
-  "validation_newscasts": 727
+  "catalogue_only": {
+    "built_from": "validation-day pages only",
+    "spots": 4284,
+    "median_tokens": 26.0,
+    "networks": [
+      [
+        "ABC",
+        3869
+      ],
+      [
+        "ABC;CBS",
+        299
+      ],
+      [
+        "CBS",
+        47
+      ],
+      [
+        "ABC;NBC",
+        31
+      ],
+      [
+        "ABC;CBS;NBC",
+        29
+      ],
+      [
+        "CBS;NBC",
+        7
+      ],
+      [
+        "NBC",
+        2
+      ]
+    ],
+    "lines": 15447,
+    "tokens": 148061,
+    "macro_f1": 0.6625005053741838,
+    "pooled": {
+      "precision": 0.9374563740635103,
+      "recall": 0.7458807808239029,
+      "f1": 0.8307672533035755,
+      "break_share": 0.2720413388203938,
+      "tokens": 5606159
+    },
+    "by_network": {
+      "ABC": {
+        "precision": 0.9376343476826379,
+        "recall": 0.7501779805407942,
+        "f1": 0.8334962716745025,
+        "break_share": 0.2749430884206448,
+        "tokens": 5456271
+      },
+      "CBS": {
+        "precision": 0.9079191394658753,
+        "recall": 0.5928190845240978,
+        "f1": 0.7172893772893773,
+        "break_share": 0.23446572308740649,
+        "tokens": 70441
+      },
+      "NBC": {
+        "precision": 0.9809365934521342,
+        "recall": 0.28088287646849414,
+        "f1": 0.43671586715867156,
+        "break_share": 0.10607071380920614,
+        "tokens": 79447
+      }
+    }
+  },
+  "validation_newscasts": 1414
 }

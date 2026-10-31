@@ -27,10 +27,25 @@ AD_CUE_RE = re.compile(r"announcer|♪|\.com\b")
 OFFSETS = range(-60, 61, 5)
 
 
-def split_of(aired: date) -> str:
-    """Assign an air date, and every newscast on it, to ``validation`` or ``test`` by a hash of the date."""
-    digest = hashlib.blake2b(aired.isoformat().encode(), digest_size=2).digest()
-    return "validation" if digest[0] % 2 == 0 else "test"
+def _rank_key(aired: date) -> bytes:
+    return hashlib.blake2b(aired.isoformat().encode(), digest_size=8).digest()
+
+
+def assign_splits(items: list[Item]) -> dict[str, str]:
+    """Split each network-year in half by air date: ``validation`` or ``test`` for every item.
+
+    Within a (network, year) stratum the distinct air dates are ordered by a hash of the date and alternate
+    between the halves, so every stratum, however small, lands on both sides in equal measure.
+    """
+    strata: dict[tuple[str, int], set[date]] = {}
+    for item in items:
+        if item.aired is not None:
+            strata.setdefault((item.network, item.aired.year), set()).add(item.aired)
+    side = {}
+    for key, days in strata.items():
+        for rank, day in enumerate(sorted(days, key=_rank_key)):
+            side[(key[0], day)] = "validation" if rank % 2 == 0 else "test"
+    return {i.identifier: side[(i.network, i.aired)] for i in items if i.aired is not None}
 
 
 def sentence_times(item: Item, offset: float) -> np.ndarray:
@@ -67,7 +82,7 @@ def estimate_offsets(items: list[Item], rundowns: dict[tuple[str, date], Rundown
                         story[0] += kind == "story"
                         story[1] += 1
                     if AD_CUE_RE.search(sentence.text):
-                        commercial[0] += kind == "commercial"
+                        commercial[0] += kind in ("commercial", "break")
                         commercial[1] += 1
             scores[offset] = story[0] / max(story[1], 1) + commercial[0] / max(commercial[1], 1)
         best[network] = max(scores, key=scores.get)
@@ -83,12 +98,13 @@ class Prepared:
     owner: np.ndarray
     kinds: list[str]
     distance: np.ndarray
+    rundown: Rundown
 
 
 def prepare(
     items: list[Item],
     rundowns: dict[tuple[str, date], Rundown],
-    index: RepetitionIndex,
+    indexes: list[RepetitionIndex],
     vocabulary: Vocabulary,
     offsets: dict[str, int],
 ) -> list[Prepared]:
@@ -98,9 +114,9 @@ def prepare(
         rundown = rundowns.get((item.network, item.aired))
         if rundown is None or not item.sentences:
             continue
-        best, owner = token_dates(item, index, vocabulary)
+        best, owner = token_dates(item, indexes, vocabulary)
         times = sentence_times(item, offsets.get(item.network, 0))
-        out.append(Prepared(item, best, owner, rundown.kind_at(times), boundary_distance(rundown, times)))
+        out.append(Prepared(item, best, owner, rundown.kind_at(times), boundary_distance(rundown, times), rundown))
     return out
 
 
@@ -124,6 +140,52 @@ def sentence_table(prepared: list[Prepared], params: Params) -> pd.DataFrame:
             )
         )
     return pd.concat(frames, ignore_index=True)
+
+
+def time_recall(prepared: list[Prepared], params: Params, offsets: dict[str, int]) -> pd.DataFrame:
+    """Per newscast, seconds of break time, how many have caption text, and how many an ``ad`` sentence covers.
+
+    A second is captioned when its recording minute has a caption block. Covered means it lies inside the
+    interpolated span of a sentence labelled ``ad``.
+    """
+    rows = []
+    for p in prepared:
+        item = p.item
+        shift = item.half_hour_offset - offsets.get(item.network, 0)
+        rundown = p.rundown
+        clock = np.arange(int(rundown.starts[0]), int(rundown.ends.max()))
+        kinds = np.asarray(rundown.kind_at(clock))
+        is_break = (kinds == "commercial") | (kinds == "break")
+        minutes = np.floor((clock - shift) / 60).astype(int)
+        captioned = np.isin(minutes, [s.minute for s in item.sentences])
+        labels = label_from_dates(p.best, p.owner, len(item.sentences), params)
+        covered = np.zeros(len(clock), dtype=bool)
+        for sentence, label in zip(item.sentences, labels, strict=True):
+            if label == "ad":
+                covered |= (clock >= sentence.start_second + shift) & (clock < sentence.end_second + shift)
+        rows.append(
+            {
+                "identifier": item.identifier,
+                "network": item.network,
+                "year": item.aired.year,
+                "break_s": int(is_break.sum()),
+                "break_captioned_s": int((is_break & captioned).sum()),
+                "break_covered_s": int((is_break & covered).sum()),
+                "break_captioned_covered_s": int((is_break & captioned & covered).sum()),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def summarise_time(frame: pd.DataFrame) -> dict[str, float]:
+    """Recall of break time over all of it and over the part with caption text, and the captioned share."""
+    total = frame[["break_s", "break_captioned_s", "break_covered_s", "break_captioned_covered_s"]].sum()
+    return {
+        "break_seconds": int(total["break_s"]),
+        "captioned_share": float(total["break_captioned_s"] / max(total["break_s"], 1)),
+        "recall_all_time": float(total["break_covered_s"] / max(total["break_s"], 1)),
+        "recall_captioned_time": float(total["break_captioned_covered_s"] / max(total["break_captioned_s"], 1)),
+    }
 
 
 def scores(table: pd.DataFrame) -> dict[str, float]:
@@ -160,18 +222,35 @@ GRID = {
 }
 
 
+def macro(per_network: dict[str, dict[str, float]]) -> float:
+    """Mean F1 over networks, so each network counts the same however many words it has."""
+    return float(np.mean([v["f1"] for v in per_network.values()])) if per_network else 0.0
+
+
 def tune(prepared: list[Prepared]) -> tuple[Params, pd.DataFrame]:
-    """Grid-search the thresholds for the highest token-weighted F1 on the given (validation) items."""
+    """Grid-search the thresholds for the highest macro F1 across networks on the given (validation) items.
+
+    The returned grid also has each network's own F1 (``f1_ABC``, ...), to check whether one shared setting
+    is close to the best each network could get alone.
+    """
     tokens = np.concatenate([np.bincount(p.owner, minlength=len(p.item.sentences)) for p in prepared])
     kinds = np.concatenate([np.asarray(p.kinds) for p in prepared])
+    networks = np.concatenate([np.full(len(p.item.sentences), p.item.network) for p in prepared])
+    names = sorted(set(networks.tolist()))
     results = []
     for values in itertools.product(*GRID.values()):
         setting = dict(zip(GRID, values, strict=True))
         params = Params(**setting)
-        labels = np.concatenate(
-            [np.asarray(label_from_dates(p.best, p.owner, len(p.item.sentences), params)) for p in prepared]
+        flagged = (
+            np.concatenate(
+                [np.asarray(label_from_dates(p.best, p.owner, len(p.item.sentences), params)) for p in prepared]
+            )
+            == "ad"
         )
-        results.append({**setting, **_scores(tokens, kinds, labels == "ad")})
-    frame = pd.DataFrame(results).sort_values("f1", ascending=False, ignore_index=True)
+        per = {n: _scores(tokens[networks == n], kinds[networks == n], flagged[networks == n]) for n in names}
+        row = {**setting, "macro_f1": macro(per), "pooled_f1": _scores(tokens, kinds, flagged)["f1"]}
+        row.update({f"f1_{n}": per[n]["f1"] for n in names})
+        results.append(row)
+    frame = pd.DataFrame(results).sort_values("macro_f1", ascending=False, ignore_index=True)
     top = frame.iloc[0]
     return Params(**{k: type(getattr(Params(), k))(top[k]) for k in GRID}), frame

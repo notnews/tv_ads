@@ -12,6 +12,7 @@ from tv_ads.parse import Item, tokenize
 
 NETWORKS = ("ABC", "CBS", "NBC", "CNN", "FOXNEWS", "MSNBC")
 MULTIPLIER = np.uint64(0x100000001B3)
+DEFAULT_N = 12
 
 
 class Vocabulary:
@@ -65,6 +66,7 @@ class RepetitionIndex:
     first_day: np.ndarray
     last_day: np.ndarray
     identifiers: set[str]
+    spot_ids: np.ndarray | None = None
 
     def lookup(self, hashes: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Distinct dates, distinct networks and day span (last minus first seen) for each hash; 0 if absent."""
@@ -78,6 +80,13 @@ class RepetitionIndex:
         span = np.where(found, self.last_day[pos] - self.first_day[pos], 0)
         return dates, nets, span
 
+    def spots_of(self, hashes: np.ndarray) -> np.ndarray:
+        """Catalogue spot of each hash, or -1 when absent or when the index has no spots."""
+        if self.spot_ids is None or not len(self.hashes):
+            return np.full(len(hashes), -1, dtype=np.int32)
+        pos = np.minimum(np.searchsorted(self.hashes, hashes), len(self.hashes) - 1)
+        return np.where(self.hashes[pos] == hashes, self.spot_ids[pos], -1)
+
     def save(self, path: Path) -> None:
         """Write the index as a compressed ``.npz``."""
         np.savez_compressed(
@@ -89,6 +98,7 @@ class RepetitionIndex:
             first_day=self.first_day,
             last_day=self.last_day,
             identifiers=np.array(sorted(self.identifiers)),
+            **({} if self.spot_ids is None else {"spot_ids": self.spot_ids}),
         )
 
     @classmethod
@@ -103,6 +113,7 @@ class RepetitionIndex:
                 data["first_day"],
                 data["last_day"],
                 set(data["identifiers"].tolist()),
+                data["spot_ids"] if "spot_ids" in data else None,
             )
 
 

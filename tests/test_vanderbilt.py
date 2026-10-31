@@ -3,8 +3,9 @@ from datetime import date
 import numpy as np
 import pandas as pd
 import pytest
+from conftest import make_item
 
-from tv_ads.evaluate import boundary_distance, split_of
+from tv_ads.evaluate import assign_splits, boundary_distance
 from tv_ads.vanderbilt import load_rundowns, row_kind
 
 
@@ -66,11 +67,15 @@ def test_boundary_distance(rundowns):
     assert boundary_distance(r, np.array([75.0, 750.0])).tolist() == [5.0, 10.0]
 
 
-def test_split_is_by_date_and_balanced():
-    days = pd.date_range("2010-01-01", "2021-12-31").date
-    splits = [split_of(d) for d in days]
-    assert set(splits) == {"validation", "test"}
-    assert abs(splits.count("test") / len(days) - 0.5) < 0.03
+def test_split_balances_every_network_year():
+    days = pd.date_range("2012-01-01", "2013-12-31").date
+    items = [make_item(f"S_{d:%Y%m%d}_013000_{net}_X", d, ["x."]) for d in days for net in ("ABC", "NBC")]
+    items += [make_item(f"S_{d:%Y%m%d}_013000_CBS_X", d, ["x."]) for d in days[:3]]
+    split = assign_splits(items)
+    for net, year in [("ABC", 2012), ("NBC", 2013)]:
+        sides = [split[i.identifier] for i in items if i.network == net and i.aired.year == year]
+        assert abs(sides.count("test") - sides.count("validation")) <= 1
+    assert sorted(split[i.identifier] for i in items if i.network == "CBS") == ["test", "validation", "validation"]
 
 
 def test_scores_count_break_rows_and_skip_furniture():

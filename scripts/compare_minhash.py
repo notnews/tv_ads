@@ -19,13 +19,13 @@ from datasketch import MinHash, MinHashLSH
 from tv_ads.cli import load_items
 from tv_ads.evaluate import (
     Prepared,
+    assign_splits,
     boundary_distance,
     estimate_offsets,
     prepare,
     scores,
     sentence_table,
     sentence_times,
-    split_of,
     tune,
 )
 from tv_ads.index import Vocabulary, build_index
@@ -37,7 +37,7 @@ def shingles(tokens: list[str]) -> list[bytes]:
     return [" ".join(tokens[i : i + 3]).encode() for i in range(len(tokens) - 2)]
 
 
-def minhash_prepared(items, rundowns, offsets, threshold):
+def minhash_prepared(items, rundowns, offsets, threshold, split):
     keys, sets, counts = [], [], {}
     for item in items:
         for j, sentence in enumerate(item.sentences):
@@ -62,8 +62,8 @@ def minhash_prepared(items, rundowns, offsets, threshold):
         )
         best = np.array([other.get((item.identifier, j), 0) for j in owner], dtype=np.int32)
         times = sentence_times(item, offsets.get(item.network, 0))
-        prepared = Prepared(item, best, owner, rundown.kind_at(times), boundary_distance(rundown, times))
-        out[split_of(item.aired)].append(prepared)
+        prepared = Prepared(item, best, owner, rundown.kind_at(times), boundary_distance(rundown, times), rundown)
+        out[split[item.identifier]].append(prepared)
     return out
 
 
@@ -71,18 +71,19 @@ def main() -> None:
     pages, vanderbilt = Path(sys.argv[1]), sys.argv[2]
     items = [i for i in load_items([pages], 8) if i.aired is not None]
     rundowns = load_rundowns(vanderbilt)
-    validation = [i for i in items if split_of(i.aired) == "validation"]
+    split = assign_splits(items)
+    validation = [i for i in items if split[i.identifier] == "validation"]
     offsets = estimate_offsets(validation, rundowns)
     vocabulary = Vocabulary()
     index = build_index(items, 8, vocabulary)
-    params, _ = tune(prepare(validation, rundowns, index, vocabulary, offsets))
-    test = [i for i in items if split_of(i.aired) == "test"]
-    table = sentence_table(prepare(test, rundowns, index, vocabulary, offsets), params)
+    params, _ = tune(prepare(validation, rundowns, [index], vocabulary, offsets))
+    test = [i for i in items if split[i.identifier] == "test"]
+    table = sentence_table(prepare(test, rundowns, [index], vocabulary, offsets), params)
     print("ngram8", params, scores(table))
     for threshold in (0.5, 0.7):
-        split = minhash_prepared(items, rundowns, offsets, threshold)
-        params, _ = tune(split["validation"])
-        print(f"minhash{threshold}", params, scores(sentence_table(split["test"], params)))
+        halves = minhash_prepared(items, rundowns, offsets, threshold, split)
+        params, _ = tune(halves["validation"])
+        print(f"minhash{threshold}", params, scores(sentence_table(halves["test"], params)))
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def test_tokenless_line_inside_a_break_is_filled():
 def test_ads_found_and_news_kept(corpus):
     index = build_index(corpus, 8)
     params = Params(min_dates=2, min_share=0.5, min_run_tokens=30, max_gap_tokens=0)
-    rows = flag_item(corpus[0], index, Vocabulary(), params)
+    rows = flag_item(corpus[0], [index], Vocabulary(), params)
     assert [r.text for r in rows if r.label == "ad"] == AD
     assert {r.label for r in rows if r.text not in AD and r.text != SIGNOFF} == {"program"}
     assert [r.label for r in rows if r.text == SIGNOFF] == ["boilerplate"]
@@ -40,11 +40,13 @@ def test_ads_found_and_news_kept(corpus):
 
 def test_own_airing_is_not_evidence(corpus):
     index = build_index(corpus[:1], 8)
-    rows = flag_item(corpus[0], index, Vocabulary(), Params(min_dates=1, min_run_tokens=0))
+    rows = flag_item(corpus[0], [index], Vocabulary(), Params(min_dates=1, min_run_tokens=0))
     assert {r.label for r in rows} == {"program"}
 
 
 def test_unindexed_item_counts_every_date(corpus):
     index = build_index(corpus[1:3], 8)
-    rows = flag_item(corpus[0], index, Vocabulary(), Params(min_dates=2, min_share=0.5, min_run_tokens=30))
+    rows = flag_item(
+        corpus[0], [index], Vocabulary(), Params(min_dates=2, min_share=0.5, min_run_tokens=30, max_gap_tokens=0)
+    )
     assert [r.text for r in rows if r.label == "ad"] == AD
