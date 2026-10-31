@@ -1,0 +1,164 @@
+{
+  "items": 1569,
+  "offsets": {
+    "ABC": -5,
+    "CBS": -15,
+    "NBC": 5
+  },
+  "by_n": {
+    "5": {
+      "params": {
+        "min_dates": 1,
+        "min_share": 0.5,
+        "min_run_tokens": 80,
+        "max_gap_tokens": 10
+      },
+      "validation_f1": 0.8518440911214623
+    },
+    "8": {
+      "params": {
+        "min_dates": 1,
+        "min_share": 0.3,
+        "min_run_tokens": 80,
+        "max_gap_tokens": 25
+      },
+      "validation_f1": 0.8522800950940134
+    },
+    "12": {
+      "params": {
+        "min_dates": 1,
+        "min_share": 0.3,
+        "min_run_tokens": 50,
+        "max_gap_tokens": 50
+      },
+      "validation_f1": 0.8514110042004738
+    }
+  },
+  "chosen": {
+    "n": 8,
+    "params": {
+      "min_dates": 1,
+      "min_share": 0.3,
+      "min_run_tokens": 80,
+      "max_gap_tokens": 25
+    }
+  },
+  "test": {
+    "newscasts": 758,
+    "sentences": 309857,
+    "all": {
+      "precision": 0.8937587475275584,
+      "recall": 0.8078584357622213,
+      "f1": 0.8486404002226816,
+      "break_share": 0.25728791606085344,
+      "tokens": 2973964
+    },
+    "interior_20s": {
+      "precision": 0.9232942045090128,
+      "recall": 0.865884257810246,
+      "f1": 0.8936681654165054,
+      "break_share": 0.2288034117936521,
+      "tokens": 2499565
+    },
+    "by_network": {
+      "ABC": {
+        "precision": 0.8929808399252376,
+        "recall": 0.8134062210029451,
+        "f1": 0.8513381132139207,
+        "break_share": 0.2622616981040244,
+        "tokens": 2835374
+      },
+      "CBS": {
+        "precision": 0.921602191030469,
+        "recall": 0.7588977376841215,
+        "f1": 0.8323735167935686,
+        "break_share": 0.22421857716254226,
+        "tokens": 63282
+      },
+      "NBC": {
+        "precision": 0.9714726291441789,
+        "recall": 0.34211240836274776,
+        "f1": 0.5060240963855421,
+        "break_share": 0.09781165347639029,
+        "tokens": 75308
+      }
+    },
+    "by_year": {
+      "2010": {
+        "precision": 0.9516214298632462,
+        "recall": 0.8553270770942875,
+        "f1": 0.9009084353772856,
+        "break_share": 0.25622102541593644,
+        "tokens": 624254
+      },
+      "2011": {
+        "precision": 0.9174337517433752,
+        "recall": 0.8489150273778139,
+        "f1": 0.8818454290392699,
+        "break_share": 0.24966322475719963,
+        "tokens": 651770
+      },
+      "2012": {
+        "precision": 0.8897222103273403,
+        "recall": 0.8033206113194624,
+        "f1": 0.844316730523627,
+        "break_share": 0.24263976670258333,
+        "tokens": 746172
+      },
+      "2013": {
+        "precision": 0.8001882119213953,
+        "recall": 0.725645675544335,
+        "f1": 0.7610961066892097,
+        "break_share": 0.27647373026041994,
+        "tokens": 610322
+      },
+      "2014": {
+        "precision": 0.9582748833719374,
+        "recall": 0.8990848152796058,
+        "f1": 0.9277367190954456,
+        "break_share": 0.27395571729842816,
+        "tokens": 238513
+      },
+      "2019": {
+        "precision": 0.8496256026259104,
+        "recall": 0.6053939482531794,
+        "f1": 0.7070120780163032,
+        "break_share": 0.26584282980191,
+        "tokens": 102933
+      }
+    },
+    "label_by_kind": {
+      "break": {
+        "ad": 16566,
+        "boilerplate": 523,
+        "program": 9971
+      },
+      "commercial": {
+        "ad": 601579,
+        "boilerplate": 5291,
+        "program": 131235
+      },
+      "furniture": {
+        "ad": 26083,
+        "boilerplate": 9359,
+        "program": 138029
+      },
+      "gap": {
+        "ad": 25,
+        "boilerplate": 0,
+        "program": 32
+      },
+      "outside": {
+        "ad": 3097,
+        "boilerplate": 14837,
+        "program": 160524
+      },
+      "story": {
+        "ad": 73479,
+        "boilerplate": 61118,
+        "program": 2074202
+      }
+    }
+  },
+  "validation_newscasts": 727
+}

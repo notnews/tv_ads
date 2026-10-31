@@ -71,3 +71,17 @@ def test_split_is_by_date_and_balanced():
     splits = [split_of(d) for d in days]
     assert set(splits) == {"validation", "test"}
     assert abs(splits.count("test") / len(days) - 0.5) < 0.03
+
+
+def test_scores_count_break_rows_and_skip_furniture():
+    from tv_ads.evaluate import scores
+
+    table = pd.DataFrame(
+        {
+            "tokens": [10, 10, 10, 10, 50],
+            "kind": ["commercial", "break", "story", "story", "furniture"],
+            "label": ["ad", "program", "ad", "program", "ad"],
+        }
+    )
+    got = scores(table)
+    assert (got["precision"], got["recall"], got["tokens"], got["break_share"]) == (0.5, 0.5, 40, 0.5)

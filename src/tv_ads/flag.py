@@ -16,10 +16,10 @@ LABELS = ("ad", "boilerplate", "program")
 class Params:
     """Decision thresholds; the defaults are the values tuned on validation days (see README)."""
 
-    min_dates: int = 2
-    min_share: float = 0.5
-    min_run_tokens: int = 30
-    max_gap_tokens: int = 0
+    min_dates: int = 1
+    min_share: float = 0.3
+    min_run_tokens: int = 80
+    max_gap_tokens: int = 25
 
 
 def token_dates(item: Item, index: RepetitionIndex, vocabulary: Vocabulary) -> tuple[np.ndarray, np.ndarray]:

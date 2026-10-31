@@ -1,0 +1,3 @@
+ngram8 Params(min_dates=1, min_share=0.3, min_run_tokens=80, max_gap_tokens=25) {'precision': 0.8834467103080033, 'recall': 0.8020423952784587, 'f1': 0.84077875471021, 'commercial_share': 0.24532305373066013, 'tokens': 2381415}
+minhash0.5 Params(min_dates=1, min_share=0.7, min_run_tokens=80, max_gap_tokens=25) {'precision': 0.8824695920632327, 'recall': 0.8043651663083518, 'f1': 0.8416091696702412, 'commercial_share': 0.24532305373066013, 'tokens': 2381415}
+minhash0.7 Params(min_dates=1, min_share=0.7, min_run_tokens=80, max_gap_tokens=50) {'precision': 0.87531780643964, 'recall': 0.8073469401728128, 'f1': 0.8399595393325059, 'commercial_share': 0.24532305373066013, 'tokens': 2381415}

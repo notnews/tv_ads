@@ -127,17 +127,18 @@ def sentence_table(prepared: list[Prepared], params: Params) -> pd.DataFrame:
 
 
 def scores(table: pd.DataFrame) -> dict[str, float]:
-    """Precision, recall and F1 of ``ad`` for commercial versus story time, weighting sentences by tokens.
+    """Precision, recall and F1 of ``ad`` for break time versus story time, weighting sentences by tokens.
 
-    Only sentences in ``commercial`` or ``story`` rows count; ``furniture``, ``break`` (teases and ads in one
-    row), ``gap`` and ``outside`` are left out because they mix both or have no reference.
+    Break time is ``commercial`` rows plus ``break`` rows ("Upcoming Items & COMMERCIALS", used from 2019),
+    which also hold a few seconds of tease. ``furniture``, ``gap`` and ``outside`` sentences are left out.
     """
     return _scores(table["tokens"].to_numpy(), table["kind"].to_numpy(), table["label"].to_numpy() == "ad")
 
 
 def _scores(tokens: np.ndarray, kinds: np.ndarray, flagged: np.ndarray) -> dict[str, float]:
-    keep = (kinds == "commercial") | (kinds == "story")
-    w, truth, flagged = tokens[keep], kinds[keep] == "commercial", flagged[keep]
+    truth = (kinds == "commercial") | (kinds == "break")
+    keep = truth | (kinds == "story")
+    w, truth, flagged = tokens[keep], truth[keep], flagged[keep]
     tp = w[flagged & truth].sum()
     precision = tp / max(w[flagged].sum(), 1)
     recall = tp / max(w[truth].sum(), 1)
@@ -146,7 +147,7 @@ def _scores(tokens: np.ndarray, kinds: np.ndarray, flagged: np.ndarray) -> dict[
         "precision": float(precision),
         "recall": float(recall),
         "f1": float(f1),
-        "commercial_share": float(w[truth].sum() / max(w.sum(), 1)),
+        "break_share": float(w[truth].sum() / max(w.sum(), 1)),
         "tokens": int(w.sum()),
     }
 

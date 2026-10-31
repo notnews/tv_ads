@@ -2,8 +2,8 @@
 
 The index lists each evening newscast as timed rows (Central time). From 2010 on, commercial breaks have their
 own rows ("Commercial", "(Commercial: Geico; ...)"), as do teases and furniture ("Upcoming Items",
-"Preview/Introduction", "Program Note", "Good Night"). From 2020 the breaks are often a single row titled
-"Upcoming Items & COMMERCIALS: ...". Time not covered by any row is recorded as a gap.
+"Preview/Introduction", "Program Note", "Good Night"). In some years (seen from 2019) a break is a single row
+titled "Upcoming Items & COMMERCIALS: ...". Time not covered by any row is recorded as a gap.
 """
 
 from __future__ import annotations

@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: "tv_ads: finding commercials in TV news closed captions by repetition"
+type: software
+authors:
+- family-names: Sood
+  given-names: Gaurav
+repository-code: https://github.com/notnews/tv_ads
+url: https://github.com/notnews/tv_ads
+license: MIT
+version: 0.1.0
+date-released: '2026-10-30'
+keywords:
+- closed captions
+- TV news
+- advertising
+- commercial detection
+- Internet Archive
