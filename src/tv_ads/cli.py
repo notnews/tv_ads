@@ -99,7 +99,7 @@ def cmd_flag(args: argparse.Namespace) -> None:
 
 
 def cmd_catalogue_build(args: argparse.Namespace) -> None:
-    """Build the automatic part of the spot catalogue from a corpus."""
+    """Build the automatic part of the spot catalog from a corpus."""
     from tv_ads.catalogue import build_catalogue, summary
 
     items = load_items(args.pages, args.workers)
@@ -120,7 +120,7 @@ def _air_dates(identifiers: set[str], pages: list[Path]) -> dict:
 
 
 def cmd_catalogue_add(args: argparse.Namespace) -> None:
-    """Add hand-labelled commercials to a catalogue."""
+    """Add hand-labelled commercials to a catalog."""
     from tv_ads.catalogue import add_human, human_spots, summary
 
     gold = pd.read_csv(args.gold)

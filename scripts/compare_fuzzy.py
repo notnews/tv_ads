@@ -1,12 +1,12 @@
-"""Does edit-tolerant matching against the catalogue find ads that exact n-grams miss?
+"""Does edit-tolerant matching against the catalog find ads that exact n-grams miss?
 
 Usage: uv run --group compare python scripts/compare_fuzzy.py <pages_dir> <vanderbilt.csv.gz> [n]
 
-The catalogue is built from validation-day pages only and matched against test-day pages. The exact route
-is ``tv-ads flag`` with that catalogue. The fuzzy route adds one step. Every sentence of four or more words
+The catalog is built from validation-day pages only and matched against test-day pages. The exact route
+is ``tv-ads flag`` with that catalog. The fuzzy route adds one step. Every sentence of four or more words
 that the exact route leaves under ``min_share`` gets candidate spots from shared word 4-grams. It is then
 compared with each candidate's text by rapidfuzz ``partial_ratio`` (the best-matching window of the spot,
-scored as 100 x (1 - normalised Indel distance)). At or above the threshold, its tokens count as repeated
+scored as 100 x (1 - normalized Indel distance)). At or above the threshold, its tokens count as repeated
 on that spot's airings. The thresholds are tuned on validation days like everything else, and the
 score threshold is chosen there too.
 """

@@ -3,7 +3,7 @@
 Usage: uv run --group compare python scripts/compare_minhash.py <pages_dir> <vanderbilt.csv.gz>
 
 Each sentence of four or more tokens becomes a MinHash of its word 3-grams (64 permutations). A sentence's
-repetition count is the number of other air dates among its LSH neighbours (Jaccard threshold 0.5 or 0.7).
+repetition count is the number of other air dates among its LSH neighbors (Jaccard threshold 0.5 or 0.7).
 Every token of the sentence gets that count, and the same thresholds, tuning and test scoring as
 ``tv-ads validate`` follow.
 """

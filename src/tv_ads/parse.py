@@ -17,7 +17,7 @@ TOKEN_RE = re.compile(r"[a-z0-9]+(?:['’][a-z]+)?")
 
 # Captions are lower case, so a period after these is rarely a sentence end. A regex is used rather than
 # pysbd (no release since 2021) or nltk punkt (needs a model download and learns abbreviations from
-# capitalisation the captions lack).
+# capitalization the captions lack).
 ABBREVIATIONS = {
     "mr", "mrs", "ms", "dr", "st", "jr", "sr", "vs", "gen", "gov", "sen", "rep", "lt", "col", "sgt", "capt",
     "prof", "rev", "mt", "ft", "no", "inc", "corp", "co", "etc", "u.s", "u.n", "u.k", "a.m", "p.m", "d.c",
