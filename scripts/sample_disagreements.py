@@ -2,7 +2,7 @@
 
 Usage: uv run python scripts/sample_disagreements.py <validate_dir> <pages_dir> <out.csv> [per_cell]
 
-Writes sentences labelled ``ad`` in story rows and sentences labelled ``program`` in commercial rows (four
+Writes sentences labeled ``ad`` in story rows and sentences labeled ``program`` in commercial rows (four
 or more tokens), with their text, so a reader can judge which side is wrong. The ``judged_ad`` column is
 left empty for that reading.
 """

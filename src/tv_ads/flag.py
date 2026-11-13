@@ -53,7 +53,7 @@ def token_dates(item: Item, indexes: list[RepetitionIndex], vocabulary: Vocabula
 
 
 def token_spots(item: Item, index: RepetitionIndex, vocabulary: Vocabulary) -> np.ndarray:
-    """For each token, the catalogue spot of a covering n-gram (the most-aired one), or -1."""
+    """For each token, the catalog spot of a covering n-gram (the most-aired one), or -1."""
     tokens, _ = item_tokens(item)
     out = np.full(len(tokens), -1, dtype=np.int32)
     if index.spot_ids is None:
@@ -92,7 +92,7 @@ def label_from_dates(
     3. Guarded sentences (:func:`edge_guard`) at either end of a run are dropped from it.
     4. A run of repeating sentences with at least ``min_run_tokens`` tokens is ``ad``: commercials and promos
        run 15-30 s, 40-80 words. Shorter isolated runs are ``boilerplate``: sign-ons, sign-offs, hand-offs
-       ("good night", "jake?") that recur every night but belong to the programme.
+       ("good night", "jake?") that recur every night but belong to the program.
     """
     sizes = np.bincount(owner, minlength=n_sentences)
     hits = np.bincount(owner, weights=best >= params.min_dates, minlength=n_sentences)
@@ -120,7 +120,7 @@ class SentenceLabel:
     """One output row.
 
     ``sentence`` is the position in the item and ``repeat_share`` the share of its tokens that repeat.
-    ``spot`` is the catalogue spot an ``ad`` sentence matched, or -1.
+    ``spot`` is the catalog spot an ``ad`` sentence matched, or -1.
     """
 
     identifier: str
@@ -140,7 +140,7 @@ def flag_item(
     vocabulary: Vocabulary,
     params: Params,
 ) -> list[SentenceLabel]:
-    """Label every sentence of an item; an index with ``spot_ids`` (the catalogue) also names the spots."""
+    """Label every sentence of an item; an index with ``spot_ids`` (the catalog) also names the spots."""
     best, owner = token_dates(item, indexes, vocabulary)
     n = len(item.sentences)
     labels = label_from_dates(best, owner, n, params, edge_guard(item))
@@ -174,7 +174,7 @@ def flag_item(
 
 
 def ad_free_text(rows: list[SentenceLabel]) -> str:
-    """The item's text with ``ad`` sentences removed; boilerplate is kept because it is programme."""
+    """The item's text with ``ad`` sentences removed; boilerplate is kept because it is program."""
     return " ".join(r.text for r in rows if r.label != "ad")
 
 

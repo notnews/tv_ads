@@ -1,4 +1,4 @@
-"""A catalogue of known spots: recurring ad copy from a corpus, grouped into spots and shipped with the package.
+"""A catalog of known spots: recurring ad copy from a corpus, grouped into spots and shipped with the package.
 
 A *line* is the token string of one sentence inside an ``ad`` run. Lines seen on two or more air dates are
 kept. Two lines belong to the same *spot* when one follows the other, within a run, on more than half the
@@ -40,7 +40,7 @@ class _Run:
 def ad_runs(
     items: list[Item], indexes: list[RepetitionIndex], vocabulary: Vocabulary, params: Params
 ) -> tuple[list[_Run], Counter]:
-    """Every run of ``ad`` sentences in the items, as normalised lines and original text; and how many times
+    """Every run of ``ad`` sentences in the items, as normalized lines and original text; and how many times
     each line occurs anywhere in the items."""
     out = []
     seen: Counter = Counter()
@@ -152,7 +152,7 @@ def cluster_spots(
 
 
 def without_window(spots: pd.DataFrame, window: str) -> pd.DataFrame:
-    """The catalogue as it would be had ``window`` never been annotated: human spots from it are dropped and
+    """The catalog as it would be had ``window`` never been annotated: human spots from it are dropped and
     spots that were ``both`` lose the window (and become ``auto`` if it was their only one)."""
     windows = spots["windows"].astype(str).str.split(";")
     has = windows.map(lambda w: window in w)
@@ -163,16 +163,16 @@ def without_window(spots: pd.DataFrame, window: str) -> pd.DataFrame:
 
 
 def auto_only(spots: pd.DataFrame) -> pd.DataFrame:
-    """The catalogue without any human annotation."""
+    """The catalog without any human annotation."""
     return spots[spots["source"] != "human"].assign(source="auto", windows="")
 
 
 def catalogue_index(spots: pd.DataFrame, n: int, vocabulary: Vocabulary | None = None) -> RepetitionIndex:
     """An index whose n-grams are those of the spots' text, each counted as its spot's airings.
 
-    Spots a person labelled (``human`` or ``both``) count as :data:`HUMAN_DATES` airings, so they match under
+    Spots a person labeled (``human`` or ``both``) count as :data:`HUMAN_DATES` airings, so they match under
     any ``min_dates``. Where spots share an n-gram the most-aired spot wins. The index names no items, so a
-    page is never discounted for being one of the airings the catalogue was built from.
+    page is never discounted for being one of the airings the catalog was built from.
     """
     vocabulary = vocabulary or Vocabulary()
     parts = []
@@ -212,7 +212,7 @@ class Catalogue:
 
     @classmethod
     def read(cls, path: Path | None = None, n: int = DEFAULT_N) -> Catalogue:
-        """Read a spots file; with no path, the catalogue packaged with tv_ads."""
+        """Read a spots file; with no path, the catalog packaged with tv_ads."""
         spots = pd.read_csv(path or PACKAGED_PATH, keep_default_na=False)
         return cls(spots, catalogue_index(spots, n))
 
@@ -258,7 +258,7 @@ def human_spots(gold: pd.DataFrame, aired: dict[str, date] | None = None) -> pd.
 
 
 def add_human(spots: pd.DataFrame, human: pd.DataFrame, n: int = DEFAULT_N, covered: float = 0.9) -> pd.DataFrame:
-    """Merge hand-labelled spots into a catalogue.
+    """Merge hand-labelled spots into a catalog.
 
     An existing spot with at least half its n-grams inside a human spot is confirmed: it becomes ``both`` and
     records the window. The human spot is appended as ``human`` unless existing spots already cover

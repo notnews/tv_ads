@@ -22,7 +22,7 @@ uv sync
 uv run tv-ads flag KGO_20120103_013000_ABC_World_News_With_Diane_Sawyer.html.gz --out flagged
 ```
 
-This matches the page against the packaged catalogue. It writes `flagged/sentences.csv.gz` and
+This matches the page against the packaged catalog. It writes `flagged/sentences.csv.gz` and
 `flagged/ad_free.jsonl`, and takes about a second. An excerpt of `sentences.csv.gz`:
 
 | minute | label | spot | text |
@@ -36,24 +36,24 @@ This matches the page against the packaged catalogue. It writes `flagged/sentenc
 | 15 | ad | 12 | possible side effects include headache, diarrhea and abdominal pain. |
 | 16 | program | -1 | reporter: it was a new year's eve near-tragedy. |
 
-`spot` is the catalogue row a sentence matched. This page aired in the corpus the catalogue was built from;
-see the validation section for how well the catalogue does on pages it has never seen.
+`spot` is the catalog row a sentence matched. This page aired in the corpus the catalog was built from;
+see the validation section for how well the catalog does on pages it has never seen.
 
 `sentences.csv.gz` has these columns: `identifier`, `minute`, `sentence` (position in the item),
 `start_second` and `end_second` (seconds from the recording start, interpolated within the minute), `label`,
 `spot`, `repeat_share` and `text`. `ad_free.jsonl` has one `{identifier, aired, text}` record per item.
 
-**What the catalogue knows.** It holds only spots that aired, captioned, at least twice in the corpus it was
+**What the catalog knows.** It holds only spots that aired, captioned, at least twice in the corpus it was
 built from: 2010–2021 ABC, CBS and NBC evening newscasts, mostly from the San Francisco stations. Local spots,
 spots from other channels and spots from other years are not in it. For those, build an index from your own
-pages. The catalogue is then used alongside it, with each n-gram taking the higher of the two counts:
+pages. The catalog is then used alongside it, with each n-gram taking the higher of the two counts:
 
 ```bash
 uv run tv-ads index my_pages/ --out my_index.npz
-uv run tv-ads flag my_pages/ --index my_index.npz --out flagged            # your index + the catalogue
+uv run tv-ads flag my_pages/ --index my_index.npz --out flagged            # your index + the catalog
 uv run tv-ads flag my_pages/ --index my_index.npz --no-catalogue --out x   # your index only
-uv run tv-ads catalogue build my_pages/ --out my_spots.csv.gz              # a catalogue of your own
-uv run tv-ads catalogue add --gold gold.csv --catalogue my_spots.csv.gz --pages my_pages/ --out my_spots.csv.gz
+uv run tv-ads catalog build my_pages/ --out my_spots.csv.gz              # a catalog of your own
+uv run tv-ads catalog add --gold gold.csv --catalogue my_spots.csv.gz --pages my_pages/ --out my_spots.csv.gz
 ```
 
 `catalogue add` folds hand-labelled commercials into a catalogue. The gold file has the columns `identifier`,
@@ -85,9 +85,9 @@ captions that also appears on *other air dates* is very likely an ad or a networ
    least `min_run_tokens` words is `ad`; a shorter run is `boilerplate`. Reporter sign-offs and `reporter:`
    lines at a run's edges are trimmed off first, because they are news airtime. Boilerplate covers sign-offs,
    hand-offs and sound bites replayed on another night. It is kept in the ad-free text, because it is part of
-   the programme.
+   the program.
 
-**The catalogue.** `tv-ads catalogue build` runs steps 1–4 over a corpus and groups the `ad` sentences into
+**The catalog.** `tv-ads catalog build` runs steps 1–4 over a corpus and groups the `ad` sentences into
 spots.
 - A *line* is the token string of one `ad` sentence. A line is kept when it aired on two or more dates and at
   least half its occurrences were inside ad runs. The second rule drops a reporter's sign-off that sometimes
@@ -111,8 +111,8 @@ The packaged file `src/tv_ads/data/spots.csv.gz` is 791 KB, built from the 4,818
 (mostly ABC; it will be rebuilt when the fetch completes) plus the hand labels so far. It holds 9,599 spots:
 9,563 `auto`, 34 `both` and 2 `human`, the last being two whole annotated breaks. The median spot is 24
 words. Spots are often fragments of a commercial, not the whole thing: the BP spot above matched three
-catalogue rows. That does not hurt matching, but a row is not a one-to-one count of commercials. Some
-catalogue rows, from the most aired down:
+catalog rows. That does not hurt matching, but a row is not a one-to-one count of commercials. Some
+catalog rows, from the most aired down:
 
 | spot | airings | first – last | networks | text |
 |---|---|---|---|---|
@@ -122,16 +122,16 @@ catalogue rows, from the most aired down:
 | 200 | 61 | 2010-12-14 – 2011-12-26 | ABC;CBS | her morning begins with arthritis pain. that's a coffee and ... |
 | 1000 | 22 | 2011-09-27 – 2011-12-15 | ABC;CBS | all-natural benefiber, the fiber supplement that's taste-free ... |
 
-**Commercials versus network promos.** Both are labelled `ad`, because no split could be made credibly.
+**Commercials versus network promos.** Both are labeled `ad`, because no split could be made credibly.
 Promos barely exist as recurring caption copy in this corpus:
-- Searching the 7,587-row trial catalogue for programme names, "tonight on", "only on abc", network news
+- Searching the 7,587-row trial catalog for program names, "tonight on", "only on abc", network news
   titles and "/c" air times found 8 rows. About 4 of them were promos ("tomorrow on "abc's world news tonight
   with david muir."", an "american bandstand" anniversary spot). The rest were sign-offs or sponsorship
   lines.
 - In 150 random ABC newscasts (2012–2015), 15 sentences matched promo cues. Nearly all were anchor-read
-  programme notes ("will it work, game seven of the nba finals 9:00 eastern right here on abc.") or local-news
-  teases ("only on abc7 news"). These are unique copy and labelled `program`.
-- Vanderbilt names a programme in 13% of break rows (`"Good Morning America"`, `"60 Minutes"`). So promos air,
+  program notes ("will it work, game seven of the nba finals 9:00 eastern right here on abc.") or local-news
+  teases ("only on abc7 news"). These are unique copy and labeled `program`.
+- Vanderbilt names a program in 13% of break rows (`"Good Morning America"`, `"60 Minutes"`). So promos air,
   but they seem to be uncaptioned or not repeated verbatim.
 
 A classifier would have almost nothing to classify, and too few cases to be scored.
@@ -146,14 +146,14 @@ the same tuning (validation days for every setting, test days for the numbers):
   pooled objective).
 - *Shorter n-grams* are more tolerant of caption errors. Validation macro F1 was 0.733 for *n* = 5, 0.736 for
   8 and 0.738 for 12: no gain.
-- *Edit-distance verification against the catalogue* ([rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)
+- *Edit-distance verification against the catalog* ([rapidfuzz](https://github.com/rapidfuzz/RapidFuzz)
   3.14.6, released 2026-08-30; active). Each sentence that the exact route leaves unmatched gets candidate
   spots from shared word 4-grams. It is then scored against each candidate by `partial_ratio`: 100 × (1 −
-  normalised Indel distance) over the best-matching window of the spot. The threshold (80, 85, 90 or 95) was
-  chosen on validation days, and 80 won. The catalogue came from validation days and was tested on the
+  normalized Indel distance) over the best-matching window of the spot. The threshold (80, 85, 90 or 95) was
+  chosen on validation days, and 80 won. The catalog came from validation days and was tested on the
   other half (`scripts/compare_fuzzy.py`, `validation/compare_fuzzy.txt`):
 
-  | test, catalogue only (*n* = 8) | ABC P / R | CBS P / R | NBC P / R | macro F1 | time for 1,408 pages |
+  | test, catalog only (*n* = 8) | ABC P / R | CBS P / R | NBC P / R | macro F1 | time for 1,408 pages |
   |---|---|---|---|---|---|
   | exact *n*-grams | 0.936 / 0.769 | 0.936 / 0.650 | 0.984 / 0.369 | 0.716 | 3.2 s |
   | + rapidfuzz ≥ 80 | 0.919 / 0.797 | 0.912 / 0.677 | 0.953 / 0.393 | 0.729 | 8.1 s |
@@ -186,7 +186,7 @@ airing. Expect the reference to be off by 10–30 s at every boundary, and occas
 test. Every network-year, however small, is therefore split in half. Validation days choose the offsets, the
 *n*-gram size (5, 8 or 12) and the thresholds (a 504-cell grid). The objective is the **macro F1: the mean of
 the ABC, CBS and NBC F1s**, so ABC's larger share of words does not decide the setting. The index itself uses
-no labels, so it is built from all pages. The catalogue-only check builds both its index and its catalogue
+no labels, so it is built from all pages. The catalogue-only check builds both its index and its catalog
 from validation days alone.
 
 **Metric.** The positive class is caption words in `commercial` or `break` rows; the negative class is
@@ -195,7 +195,7 @@ scored. Two time-based recalls are also reported. They answer a question word-ba
 break time has no caption text at all? For each second of break time in the rundown:
 
 - *captioned* means its recording minute has a caption block;
-- *covered* means it lies inside the interpolated span of a sentence labelled `ad`.
+- *covered* means it lies inside the interpolated span of a sentence labeled `ad`.
 
 **One setting or one per network?** The best setting for each network on its own improves its validation F1
 by at most 0.006 over the shared setting: ABC 0.863 against 0.869, CBS 0.865 against 0.865, NBC 0.487 against
@@ -227,7 +227,7 @@ The remaining CBS and NBC years (CBS 2012 and 2019, NBC 2012 and 2019) are in `s
 - Half of NBC's break time (52.8%) has no caption block at all. On `KNTV_20120306_013000_NBC_Nightly_News`,
   minutes 15, 19, 20, 24 and 25 are empty. NBC newscasts carry 337 caption words in break rows, against
   1,100 for ABC.
-- Even in captioned NBC break minutes, most words are not ads. I read 30 random NBC sentences labelled
+- Even in captioned NBC break minutes, most words are not ads. I read 30 random NBC sentences labeled
   `program` that fell in break rows. Nearly all were news or teases spilling over a boundary ("and when "nbc
   nightly news" continues on this sunday evening, making the grade, ..."), with a median distance of 16 s
   from the boundary. Two were real ads that were missed: a State Farm line and an area-code public service
@@ -236,26 +236,26 @@ The remaining CBS and NBC years (CBS 2012 and 2019, NBC 2012 and 2019) are in `s
   dragged down by boundary spill into minutes that are mostly empty.
 - NBC is also thin in the current corpus (74 pages), so NBC-only spots have had few chances to repeat.
 
-**The catalogue on pages it has never seen.** A catalogue was built from validation-day pages only (4,284
+**The catalog on pages it has never seen.** A catalog was built from validation-day pages only (4,284
 spots) and used alone, with no corpus index, on test-day pages:
 
-| test, catalogue only | precision | recall | F1 |
+| test, catalog only | precision | recall | F1 |
 |---|---|---|---|
 | ABC | 0.938 | 0.750 | 0.833 |
 | CBS | 0.908 | 0.593 | 0.717 |
 | NBC | 0.981 | 0.281 | 0.437 |
 | macro F1 | | | 0.663 |
 
-Compared with a corpus index, the catalogue alone gives up 7–14 points of recall. It is more precise, because it
+Compared with a corpus index, the catalog alone gives up 7–14 points of recall. It is more precise, because it
 holds only lines that mostly occur inside ad runs.
 
 **How much of the error is the reference?** `scripts/sample_disagreements.py` draws 40 random test sentences
 of each kind of disagreement (`validation/disagreements.csv`, from the first run on 1,569 pages, column
 `judged_ad`). I read each one and judged from the text alone whether it is an ad:
 
-- *Labelled ad, but in a story row:* 26 of 40 are plainly ads (`ask your doctor about cialis for daily use and
-  a 30-tablet free trial.`). 3 are programme. 11 cannot be told from the text.
-- *Labelled program, but in a commercial row:* 32 of 40 are plainly news or teases, 0 are plainly ads, and 8
+- *Labeled ad, but in a story row:* 26 of 40 are plainly ads (`ask your doctor about cialis for daily use and
+  a 30-tablet free trial.`). 3 are program. 11 cannot be told from the text.
+- *Labeled program, but in a commercial row:* 32 of 40 are plainly news or teases, 0 are plainly ads, and 8
   are unclear.
 
 Most measured errors are misalignment in the reference, so the tables understate accuracy. The 2013 ABC dip
@@ -270,13 +270,13 @@ tv-ads score-gold PAGES --gold gold.csv --out gold.json
 
 Each window is flagged twice:
 - with the catalogue's auto spots only;
-- with the whole catalogue except the human spots taken from that window (leave-one-window-out), so a
+- with the whole catalog except the human spots taken from that window (leave-one-window-out), so a
   window is never scored against its own labels.
 
 Rows are matched to sentences by their tokens within the same item and minute. Commercial and promo are
 positives; unclear is dropped.
 
-On the first 8 windows (325 rows, 74 commercial sentences), the catalogue alone, with no corpus index, gets
+On the first 8 windows (325 rows, 74 commercial sentences), the catalog alone, with no corpus index, gets
 precision 0.986 and recall 0.986 both ways: 73 of 74 commercials found, 1 news sentence flagged. The human
 spots change nothing yet, because the two annotated breaks are different ads from those in other windows.
 The result may be a little flattering: the gold items are in the corpus the auto spots were built
@@ -293,13 +293,13 @@ site's TLS certificate has expired, and verification was not bypassed.
   whole infomercials that replace a pre-empted newscast (`KGO_20190706_230000_...` is 30 minutes of a
   pain-relief device). With nothing to match, they stay `program`. Gap filling recovers a single-airing spot
   only when it is short and sits between two repeating ones.
-- **Show furniture and replayed news.** Sign-offs and hand-offs recur and are labelled `boilerplate`, which is
+- **Show furniture and replayed news.** Sign-offs and hand-offs recur and are labeled `boilerplate`, which is
   kept. A news package rerun on a later date, such as a weekend replay or a year-end look back, can be long
-  enough to be labelled `ad`. Reporter sign-offs ("linsey davis, abc news, new york.") and `reporter:` lines
+  enough to be labeled `ad`. Reporter sign-offs ("linsey davis, abc news, new york.") and `reporter:` lines
   at either edge of an ad run are trimmed back to `program`. On 2,237 test newscasts, the trim moved 407
   sentences out of `ad`, 280 of them in story rows. Macro F1 went from 0.7319 to 0.7325, with recall
   unchanged.
-- **Teases are programme.** "Still ahead ..." is written for the night, so it is `program`. The ad-free text is
+- **Teases are program.** "Still ahead ..." is written for the night, so it is `program`. The ad-free text is
   free of ads, not of everything except stories.
 - **Missing ad captions.** Some stations, notably KNTV for NBC, leave commercial minutes uncaptioned. There is
   nothing to remove.
@@ -308,7 +308,7 @@ site's TLS certificate has expired, and verification was not bypassed.
   `program`, not removed. Garbled lines that merge two streams ("climb nothing freezing waters dy") match
   nothing; they are removed only when they sit inside a break.
 - **Short sentences** ("geico.") have fewer words than *n*. They are judged by the *n*-grams that run across
-  them from the neighbouring sentences, so they follow their neighbours.
+  them from the neighboring sentences, so they follow their neighbors.
 - **Corpus density.** The thresholds depend on how many nights are indexed. `min_dates=1` was tuned on a
   corpus that is dense for ABC and sparse for CBS and NBC. Re-tune with `make validate` when the corpus
   changes.
@@ -319,8 +319,8 @@ site's TLS certificate has expired, and verification was not bypassed.
 make lint      # black (line length 120), isort (black profile), flake8
 make test      # pytest; fixtures in tests/fixtures with provenance.json
 make validate  # export Vanderbilt rows if needed, tune on validation days, score test days -> data/validate
-uv run tv-ads catalogue build ../notwork_news/data/derived/captions/html --out data/spots_auto.csv.gz
-uv run tv-ads catalogue add --gold gold.csv --catalogue data/spots_auto.csv.gz --pages ../notwork_news/data/derived/captions/html --out src/tv_ads/data/spots.csv.gz
+uv run tv-ads catalog build ../notwork_news/data/derived/captions/html --out data/spots_auto.csv.gz
+uv run tv-ads catalog add --gold gold.csv --catalogue data/spots_auto.csv.gz --pages ../notwork_news/data/derived/captions/html --out src/tv_ads/data/spots.csv.gz
 ```
 
 ## License

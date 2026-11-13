@@ -148,7 +148,7 @@ def time_recall(prepared: list[Prepared], params: Params, offsets: dict[str, int
     """Per newscast, seconds of break time, how many have caption text, and how many an ``ad`` sentence covers.
 
     A second is captioned when its recording minute has a caption block. Covered means it lies inside the
-    interpolated span of a sentence labelled ``ad``.
+    interpolated span of a sentence labeled ``ad``.
     """
     rows = []
     for p in prepared:
